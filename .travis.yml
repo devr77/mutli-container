@@ -4,12 +4,22 @@ services:
   - docker
 
 before_install:
-  - echo "${DOCKER_PASSWORD:0:3}"
+  - docker build -t devr77/multiple-docker-react -f ./client/Dockerfile.dev ./client
 
 script:
   - docker run -e CI=true devr77/multiple-docker-react npm test -- --coverage
 
 after_success:
+  - docker build -t devr77/multi-client ./client
+  - docker build -t devr77/multi-nginx ./nginx
+  - docker build -t devr77/multi-server ./server
+  - docker build -t devr77/multi-worker ./worker
+
 # Log in to docker CLI
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
 
+# Take those images and push them to docker hub
+  - docker push devr77/multi-client
+  - docker push devr77/multi-nginx
+  - docker push devr77/multi-server
+  - docker push devr77/multi-worker
